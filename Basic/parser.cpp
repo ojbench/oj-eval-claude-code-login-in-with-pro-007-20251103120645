@@ -16,6 +16,7 @@
 Expression *parseExp(TokenScanner &scanner) {
     Expression *exp = readE(scanner);
     if (scanner.hasMoreTokens()) {
+        delete exp; // Free the expression before throwing error
         error("parseExp: Found extra token: " + scanner.nextToken());
     }
     return exp;
