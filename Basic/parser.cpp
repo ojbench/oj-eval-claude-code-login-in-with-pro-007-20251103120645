@@ -43,12 +43,12 @@ Expression *readE(TokenScanner &scanner, int prec) {
         Expression *rhs = nullptr;
         try {
             rhs = readE(scanner, newPrec);
-            exp = new CompoundExp(token, exp, rhs);
         } catch (...) {
             delete exp;
-            delete rhs;
             throw;
         }
+        Expression *oldExp = exp;
+        exp = new CompoundExp(token, oldExp, rhs);
     }
     scanner.saveToken(token);
     return exp;
