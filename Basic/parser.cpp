@@ -40,8 +40,15 @@ Expression *readE(TokenScanner &scanner, int prec) {
         token = scanner.nextToken();
         int newPrec = precedence(token);
         if (newPrec <= prec) break;
-        Expression *rhs = readE(scanner, newPrec);
-        exp = new CompoundExp(token, exp, rhs);
+        Expression *rhs = nullptr;
+        try {
+            rhs = readE(scanner, newPrec);
+            exp = new CompoundExp(token, exp, rhs);
+        } catch (...) {
+            delete exp;
+            delete rhs;
+            throw;
+        }
     }
     scanner.saveToken(token);
     return exp;
@@ -59,10 +66,22 @@ Expression *readT(TokenScanner &scanner) {
     TokenType type = scanner.getTokenType(token);
     if (type == WORD) return new IdentifierExp(token);
     if (type == NUMBER) return new ConstantExp(stringToInteger(token));
-    if (token == "-") return new CompoundExp(token, new ConstantExp(0), readE(scanner));
+    if (token == "-") {
+        Expression *zero = new ConstantExp(0);
+        Expression *rhs = nullptr;
+        try {
+            rhs = readE(scanner);
+            return new CompoundExp(token, zero, rhs);
+        } catch (...) {
+            delete zero;
+            delete rhs;
+            throw;
+        }
+    }
     if (token != "(") error("Illegal term in expression");
     Expression *exp = readE(scanner);
     if (scanner.nextToken() != ")") {
+        delete exp;
         error("Unbalanced parentheses in expression");
     }
     return exp;
