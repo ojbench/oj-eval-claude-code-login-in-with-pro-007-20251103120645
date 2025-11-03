@@ -145,8 +145,10 @@ public:
 
 private:
 
-    // Fill this in with whatever types and instance variables you need
-    //todo
+    // Store line numbers to source code
+    std::map<int, std::string> sourceLines;
+    // Store line numbers to parsed statements
+    std::map<int, Statement*> parsedStatements;
 };
 
 #endif

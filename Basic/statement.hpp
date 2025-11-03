@@ -24,6 +24,11 @@
 
 class Program;
 
+// Global variables for control flow management
+extern int currentLine;
+extern int nextLine;
+extern bool shouldEnd;
+
 /*
  * Class: Statement
  * ----------------
@@ -84,5 +89,78 @@ public:
  * an Expression object), the class implementation must also
  * specify its own destructor method to free that memory.
  */
+
+// REM statement - comment (does nothing)
+class RemStatement : public Statement {
+public:
+    RemStatement() {}
+    virtual ~RemStatement() {}
+    virtual void execute(EvalState &state, Program &program) override {}
+};
+
+// LET statement - variable assignment
+class LetStatement : public Statement {
+private:
+    std::string varName;
+    Expression *exp;
+public:
+    LetStatement(std::string var, Expression *e) : varName(var), exp(e) {}
+    virtual ~LetStatement() { delete exp; }
+    virtual void execute(EvalState &state, Program &program) override;
+};
+
+// PRINT statement - print expression value
+class PrintStatement : public Statement {
+private:
+    Expression *exp;
+public:
+    PrintStatement(Expression *e) : exp(e) {}
+    virtual ~PrintStatement() { delete exp; }
+    virtual void execute(EvalState &state, Program &program) override;
+};
+
+// INPUT statement - read input to variable
+class InputStatement : public Statement {
+private:
+    std::string varName;
+public:
+    InputStatement(std::string var) : varName(var) {}
+    virtual ~InputStatement() {}
+    virtual void execute(EvalState &state, Program &program) override;
+};
+
+// END statement - terminate program
+class EndStatement : public Statement {
+public:
+    EndStatement() {}
+    virtual ~EndStatement() {}
+    virtual void execute(EvalState &state, Program &program) override;
+};
+
+// GOTO statement - jump to line number
+class GotoStatement : public Statement {
+private:
+    int targetLine;
+public:
+    GotoStatement(int line) : targetLine(line) {}
+    virtual ~GotoStatement() {}
+    virtual void execute(EvalState &state, Program &program) override;
+    int getTargetLine() const { return targetLine; }
+};
+
+// IF statement - conditional jump
+class IfStatement : public Statement {
+private:
+    Expression *lhs;
+    Expression *rhs;
+    std::string op;
+    int targetLine;
+public:
+    IfStatement(Expression *l, std::string operation, Expression *r, int line)
+        : lhs(l), op(operation), rhs(r), targetLine(line) {}
+    virtual ~IfStatement() { delete lhs; delete rhs; }
+    virtual void execute(EvalState &state, Program &program) override;
+    int getTargetLine() const { return targetLine; }
+};
 
 #endif
